@@ -4,6 +4,7 @@
 Skrol29, 2010-09-03
 */
 
+namespace SebLucas\TbsZip;
 
 include_once('tbszip.php'); // load the TbsZip library
 $zip = new clsTbsZip(); // create a new instance of the TbsZip class
@@ -22,7 +23,7 @@ $zip->Open('an_existing_archive.zip'); // open an existing archive for reading a
 $ok = $zip->FileExists('subfolder/help.html');
 
 // count the files stored in the archive
-$file_nbr = count($zip->CdFileLst);
+$file_nbr = is_countable($zip->CdFileLst) ? count($zip->CdFileLst) : 0;
 
 // retrieve the content of an compressed file in the archive
 $text1 = $zip->FileRead('readme.txt');

@@ -10,10 +10,12 @@ for TinyButStrong Template Engine (TBS). OpenTbs makes TBS able to merge OpenOff
 Visit http://www.tinybutstrong.com
 */
 
-define('TBSZIP_DOWNLOAD', 1);   // download (default)
-define('TBSZIP_NOHEADER', 4);   // option to use with DOWNLOAD: no header is sent
-define('TBSZIP_FILE', 8);       // output to file  , or add from file
-define('TBSZIP_STRING', 32);    // output to string, or add from string
+namespace SebLucas\TbsZip;
+
+const TBSZIP_DOWNLOAD = 1;   // download (default)
+const TBSZIP_NOHEADER = 4;   // option to use with DOWNLOAD: no header is sent
+const TBSZIP_FILE = 8;       // output to file  , or add from file
+const TBSZIP_STRING = 32;    // output to string, or add from string
 
 class clsTbsZip
 {
@@ -64,7 +66,7 @@ class clsTbsZip
         $this->Error = false;
         $this->ArchFile = $ArchName;
         $this->ArchIsNew = true;
-        $bin = 'PK'.chr(05).chr(06).str_repeat(chr(0), 18);
+        $bin = 'PK'.chr(0o5).chr(0o6).str_repeat(chr(0), 18);
         $this->CdEndPos = strlen($bin) - 4;
         $this->CdInfo = ['disk_num_curr'=>0, 'disk_num_cd'=>0, 'file_nbr_curr'=>0, 'file_nbr_tot'=>0, 'l_cd'=>0, 'p_cd'=>0, 'l_comm'=>0, 'v_comm'=>'', 'bin'=>$bin];
         $this->CdPos = $this->CdInfo['p_cd'];
@@ -126,7 +128,7 @@ class clsTbsZip
         } // Cancel a previously added file
 
         // Save information for adding a new file into the archive
-        $Diff = 30 + 46 + 2*strlen($Name); // size of the header + cd info
+        $Diff = 30 + 46 + 2*strlen((string) $Name); // size of the header + cd info
         $Ref = $this->_DataCreateNewRef($Data, $DataType, $Compress, $Diff, $Name);
         if ($Ref===false) {
             return false;
@@ -138,7 +140,7 @@ class clsTbsZip
 
     public function CentralDirRead()
     {
-        $cd_info = 'PK'.chr(05).chr(06); // signature of the Central Directory
+        $cd_info = 'PK'.chr(0o5).chr(0o6); // signature of the Central Directory
         $cd_pos = -22;
         $this->_MoveTo($cd_pos, SEEK_END);
         $b = $this->_ReadData(4);
@@ -232,9 +234,9 @@ class clsTbsZip
     {
         if ($this->DisplayError) {
             if (PHP_SAPI==='cli') {
-                echo get_class($this).' ERROR with the zip archive: '.$Msg."\r\n";
+                echo static::class.' ERROR with the zip archive: '.$Msg."\r\n";
             } else {
-                echo '<strong>'.get_class($this).' ERROR with the zip archive:</strong> '.$Msg.'<br>'."\r\n";
+                echo '<strong>'.static::class.' ERROR with the zip archive:</strong> '.$Msg.'<br>'."\r\n";
             }
         }
         $this->Error = $Msg;
@@ -288,7 +290,7 @@ class clsTbsZip
         foreach ($arr as $k=>$v) {
             if (is_array($v)) {
                 $arr[$k] = $this->DebugArray($v);
-            } elseif (substr($k, 0, 2)=='p_') {
+            } elseif (str_starts_with((string) $k, 'p_')) {
                 $arr[$k] = $this->_TxtPos($v);
             }
         }
@@ -580,7 +582,7 @@ class clsTbsZip
             } else {
                 $b2 = '';
             }
-            $info_old_len = strlen($b1) + $this->CdFileLst[$ReplIdx]['l_data_c'] + strlen($b2); // $FileInfo['l_data_c'] may have a 0 value in some archives
+            $info_old_len = strlen((string) $b1) + $this->CdFileLst[$ReplIdx]['l_data_c'] + strlen((string) $b2); // $FileInfo['l_data_c'] may have a 0 value in some archives
             // get replacement information
             $ReplInfo =& $this->ReplInfo[$ReplIdx];
             if ($ReplInfo===false) {
@@ -600,7 +602,7 @@ class clsTbsZip
                 } // meth
                 // prepare the bottom description if the zipped file, if any
                 if ($b2!=='') {
-                    $d = (strlen($b2)==16) ? 4 : 0; // offset because of the signature if any
+                    $d = (strlen((string) $b2)==16) ? 4 : 0; // offset because of the signature if any
                     $this->_PutDec($b2, $ReplInfo['crc32'], $d+0, 4); // crc32
                     $this->_PutDec($b2, $ReplInfo['len_c'], $d+4, 4); // l_data_c
                     $this->_PutDec($b2, $ReplInfo['len_u'], $d+8, 4); // l_data_u
@@ -627,7 +629,7 @@ class clsTbsZip
         $ArchPos = $this->CdPos;
 
         // Output file to add
-        $AddNbr = count($this->AddInfo);
+        $AddNbr = is_countable($this->AddInfo) ? count($this->AddInfo) : 0;
         $AddDataLen = 0; // total len of added data (inlcuding file headers)
         if ($AddNbr>0) {
             $AddPos = $ArchPos + $Delta; // position of the start
@@ -644,7 +646,7 @@ class clsTbsZip
         $old_cd_len = 0;
         for ($i=0;$i<$this->CdFileNbr;$i++) {
             $b1 = $this->CdFileLst[$i]['bin'];
-            $old_cd_len += strlen($b1);
+            $old_cd_len += strlen((string) $b1);
             if (!isset($DelLst[$i])) {
                 if (isset($FicNewPos[$i])) {
                     $this->_PutDec($b1, $FicNewPos[$i], 42, 4);
@@ -714,7 +716,7 @@ class clsTbsZip
         if (($Render & TBSZIP_FILE)==TBSZIP_FILE) {
             $this->OutputMode = TBSZIP_FILE;
             if (''.$File=='') {
-                $File = basename($this->ArchFile).'.zip';
+                $File = basename((string) $this->ArchFile).'.zip';
             }
             $this->OutputHandle = @fopen($File, 'w');
             if ($this->OutputHandle===false) {
@@ -727,7 +729,7 @@ class clsTbsZip
             $this->OutputMode = TBSZIP_DOWNLOAD;
             // Output the file
             if (''.$File=='') {
-                $File = basename($this->ArchFile);
+                $File = basename((string) $this->ArchFile);
             }
             if (($Render & TBSZIP_NOHEADER)==TBSZIP_NOHEADER) {
             } else {
@@ -736,8 +738,8 @@ class clsTbsZip
                     header('Content-Type: '.$ContentType);
                 }
                 // @checkme this should really be deprecated
-                if (function_exists('mb_convert_encoding') && strlen($File) != strlen(mb_convert_encoding($File, 'ISO-8859-1', 'UTF-8'))) {
-                    header('Content-Disposition: attachment; filename="book.epub"; filename*=utf-8\'\'' . rawurlencode($File));
+                if (function_exists('mb_convert_encoding') && strlen((string) $File) != strlen(mb_convert_encoding((string) $File, 'ISO-8859-1', 'UTF-8'))) {
+                    header('Content-Disposition: attachment; filename="book.epub"; filename*=utf-8\'\'' . rawurlencode((string) $File));
                 } else {
                     header('Content-Disposition: attachment; filename="'.$File.'"');
                 }
@@ -781,8 +783,8 @@ class clsTbsZip
             echo $data; // donwload
         } elseif ($this->OutputMode===TBSZIP_STRING) {
             $this->OutputSrc .= $data; // to string
-        } elseif (TBSZIP_FILE) {
-            fwrite($this->OutputHandle, $data); // to file
+        } elseif ($this->OutputMode===TBSZIP_FILE) {
+            fwrite($this->OutputHandle, (string) $data); // to file
         }
     }
 
@@ -819,12 +821,12 @@ class clsTbsZip
 
     public function _GetDec($txt, $pos, $len)
     {
-        $x = substr($txt, $pos, $len);
+        $x = substr((string) $txt, $pos, $len);
         $z = 0;
         for ($i=0;$i<$len;$i++) {
             $asc = ord($x[$i]);
             if ($asc>0) {
-                $z = $z + $asc*pow(256, $i);
+                $z = $z + $asc*256 ** $i;
             }
         }
         return $z;
@@ -832,19 +834,19 @@ class clsTbsZip
 
     public function _GetHex($txt, $pos, $len)
     {
-        $x = substr($txt, $pos, $len);
+        $x = substr((string) $txt, $pos, $len);
         return 'h:'.bin2hex(strrev($x));
     }
 
     public function _GetBin($txt, $pos, $len)
     {
-        $x = substr($txt, $pos, $len);
+        $x = substr((string) $txt, $pos, $len);
         $z = '';
         for ($i=0;$i<$len;$i++) {
             $asc = ord($x[$i]);
             if (isset($x[$i])) {
                 for ($j=0;$j<8;$j++) {
-                    $z .= ($asc & pow(2, $j)) ? '1' : '0';
+                    $z .= ($asc & 2 ** $j) ? '1' : '0';
                 }
             } else {
                 $z .= '00000000';
@@ -875,7 +877,7 @@ class clsTbsZip
             }
             $x .= chr($z);
         }
-        $txt = substr_replace($txt, $x, $pos, $len);
+        $txt = substr_replace((string) $txt, $x, $pos, $len);
     }
 
     public function _MsDos_Date($Timestamp = false)
@@ -928,7 +930,7 @@ class clsTbsZip
             }
             $this->_MoveTo($pos);
             $x = $this->_ReadData(256);
-            $p = strpos($x, $cd_info);
+            $p = strpos((string) $x, (string) $cd_info);
             if ($p===false) {
                 $nbr++;
                 $pos = $pos - 256 - 256;
@@ -948,11 +950,11 @@ class clsTbsZip
         $now = time();
         $date  = $this->_MsDos_Date($now);
         $time  = $this->_MsDos_Time($now);
-        $len_n = strlen($Ref['name']);
+        $len_n = strlen((string) $Ref['name']);
         $purp  = 2048 ; // purpose // +8 to indicates that there is an extended local header
 
         // Header for file in the data section
-        $b = 'PK'.chr(03).chr(04).str_repeat(' ', 26); // signature
+        $b = 'PK'.chr(0o3).chr(0o4).str_repeat(' ', 26); // signature
         $this->_PutDec($b, 20, 4, 2); //vers = 20
         $this->_PutDec($b, $purp, 6, 2); // purp
         $this->_PutDec($b, $Ref['meth'], 8, 2);  // meth
@@ -972,7 +974,7 @@ class clsTbsZip
         unset($Ref['data']); // save PHP memory
 
         // Information for file in the Central Directory
-        $b = 'PK'.chr(01).chr(02).str_repeat(' ', 42); // signature
+        $b = 'PK'.chr(0o1).chr(0o2).str_repeat(' ', 42); // signature
         $this->_PutDec($b, 20, 4, 2);  // vers_used = 20
         $this->_PutDec($b, 20, 6, 2);  // vers_necess = 20
         $this->_PutDec($b, $purp, 8, 2);  // purp
@@ -1023,15 +1025,15 @@ class clsTbsZip
             $path = false;
             if ($Compress) {
                 // we compress now in order to save PHP memory
-                $len_u = strlen($Data);
-                $crc32 = crc32($Data);
-                $Data = gzdeflate($Data);
+                $len_u = strlen((string) $Data);
+                $crc32 = crc32((string) $Data);
+                $Data = gzdeflate((string) $Data);
                 $len_c = strlen($Data);
             } else {
-                $len_c = strlen($Data);
+                $len_c = strlen((string) $Data);
                 if ($len_u===false) {
                     $len_u = $len_c;
-                    $crc32 = crc32($Data);
+                    $crc32 = crc32((string) $Data);
                 }
             }
         } else {
@@ -1062,7 +1064,7 @@ class clsTbsZip
             }
             if ($Ref['len_c']===false) {
                 // means the data must be compressed
-                $Ref['data'] = gzdeflate($Ref['data']);
+                $Ref['data'] = gzdeflate((string) $Ref['data']);
                 $Ref['len_c'] = strlen($Ref['data']);
             }
         }
@@ -1073,7 +1075,7 @@ class clsTbsZip
         // Return the size of the new archive, or false if it cannot be calculated (because of external file that must be compressed before to be insered)
 
         if ($this->ArchIsNew) {
-            $Len = strlen($this->CdInfo['bin']);
+            $Len = strlen((string) $this->CdInfo['bin']);
         } elseif ($this->ArchIsStream) {
             $x = fstat($this->ArchHnd);
             $Len = $x['size'];
@@ -1095,9 +1097,9 @@ class clsTbsZip
                     $this->_ReadFile($i, false);
                 }
                 $Vis =& $this->VisFileLst[$i];
-                $Len += -strlen($Vis['bin']) -strlen($Info['bin']) - $Info['l_data_c'];
+                $Len += -strlen((string) $Vis['bin']) -strlen((string) $Info['bin']) - $Info['l_data_c'];
                 if (isset($Vis['desc_bin'])) {
-                    $Len += -strlen($Vis['desc_bin']);
+                    $Len += -strlen((string) $Vis['desc_bin']);
                 }
             } elseif ($Ref['len_c']===false) {
                 return false; // information not yet known

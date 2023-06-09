@@ -6,6 +6,8 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+use SebLucas\EPubMeta\EPub;
+
 $ePubMetaPath = realpath(dirname(dirname(dirname(__FILE__)))) . '/vendor/seblucas/php-epub-meta';
 require_once $ePubMetaPath . '/lib/EPub.php';
 require_once $ePubMetaPath . '/lib/EPubDOMElement.php';
@@ -61,7 +63,7 @@ class BookEPub extends EPub
      * 'Simpson, Jacqueline' => 'Jacqueline Simpson',
      * )
      *
-     * @param array|false $authors
+     * @param array|string|false $authors
      */
     public function Authors($authors = false)
     {

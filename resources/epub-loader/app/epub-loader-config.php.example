@@ -8,9 +8,11 @@
 
 defined('DEF_AppName') or die('Restricted access');
 
-if (PHP_SAPI === 'cli') { parse_str(implode('&', array_slice($argv, 1)), $_GET); }
+if (PHP_SAPI === 'cli') {
+    parse_str(implode('&', array_slice($argv, 1)), $_GET);
+}
 
-$gConfig = array();
+$gConfig = [];
 
 /**
  * Application name
@@ -29,7 +31,7 @@ $gConfig['admin_email'] = 'contact@atoll-digital-library.org';
  */
 $gConfig['cops_directory'] = dirname(dirname(dirname(__DIR__)));
 if (!is_dir($gConfig['cops_directory'])) {
-	die ('Incorrect Cops directory: ' . $gConfig['cops_directory']);
+    die('Incorrect Cops directory: ' . $gConfig['cops_directory']);
 }
 
 /**
@@ -48,16 +50,14 @@ $gConfig['create_db'] = true;
  *   db_path: The path where to create the database
  *   epub_path: The relative path from db_path where to look for the epub files
  */
-$gConfig['databases'] = array();
-$gConfig['databases'][] = array('name' => 'Littérature classique', 'db_path' => '/opt/ebooks/calibre/demo', 'epub_path' => 'epub');
-$gConfig['databases'][] = array('name' => 'Bibliothèque numérique romande', 'db_path' => '/opt/ebooks/calibre/bnr', 'epub_path' => 'epub');
-$gConfig['databases'][] = array('name' => 'La Bibliothèque d\'Ebooks', 'db_path' => '/opt/ebooks/calibre/bibebook', 'epub_path' => 'epub');
+$gConfig['databases'] = [];
+$gConfig['databases'][] = ['name' => 'Littérature classique', 'db_path' => '/opt/ebooks/calibre/demo', 'epub_path' => 'epub'];
+$gConfig['databases'][] = ['name' => 'Bibliothèque numérique romande', 'db_path' => '/opt/ebooks/calibre/bnr', 'epub_path' => 'epub'];
+$gConfig['databases'][] = ['name' => 'La Bibliothèque d\'Ebooks', 'db_path' => '/opt/ebooks/calibre/bibebook', 'epub_path' => 'epub'];
 
 /**
  * Available actions
  */
-$gConfig['actions'] = array();
+$gConfig['actions'] = [];
 $gConfig['actions']['csv_export'] = 'Csv export';
 $gConfig['actions']['db_load'] = 'Create database';
-
-?>

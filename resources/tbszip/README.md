@@ -1,7 +1,8 @@
 TbsZip - a zip modifier for PHP
 ===============================
+version 2.xx, 2023-06-09, by mikespub
 version 2.16, 2014-04-08, by Skrol29  
-document updated on 2014-04-08
+document updated on 2023-06-09
 
 
 Introduction
@@ -49,6 +50,8 @@ Example
 -------
 
 ```php
+namespace SebLucas\TbsZip; // use namespace for TbsZip class and constants
+
 $zip = new clsTbsZip(); // instantiate the class
 
 $zip->Open('archive1.zip'); // open an existing zip archive
@@ -253,6 +256,9 @@ check errors when property `DisplayError` is set to `false`.
 
 Change log
 ----------
+
+Version 2.xx, date: 2023-06-09
+* upgrade to PHP 8.x and use namespace
 
 Version 2.16, date: 2014-04-08
 * bug fix: could not download a file that has the same name as the opened archive.

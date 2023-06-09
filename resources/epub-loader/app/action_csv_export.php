@@ -5,6 +5,9 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
+
+use Marsender\EPubLoader\BookExport;
+
 /** @var array $dbConfig */
 
 defined('DEF_AppName') or die('Restricted access');

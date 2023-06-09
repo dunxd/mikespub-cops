@@ -6,6 +6,10 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader;
+
+use Exception;
+
 require_once(realpath(dirname(__FILE__)) . '/CsvExport.class.php');
 
 class BookExport

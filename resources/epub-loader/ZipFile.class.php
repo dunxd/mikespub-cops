@@ -6,6 +6,10 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader;
+
+use ZipArchive;
+
 /**
  * ZipFile class allows to open files inside a zip file with the standard php zip functions
  */

@@ -6,6 +6,10 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader;
+
+use Exception;
+
 require_once(realpath(dirname(__FILE__)) . '/BookEPub.class.php');
 require_once(realpath(dirname(__FILE__)) . '/ZipFile.class.php');
 /*
@@ -83,7 +87,7 @@ class BookInfos
         }
 
         // Load the epub file
-        $ePub = new BookEPub($fullFileName, 'ZipFile');
+        $ePub = new BookEPub($fullFileName, ZipFile::class);
 
         // Check epub version
         $version = $ePub->getEpubVersion();

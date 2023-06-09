@@ -5,6 +5,12 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
+
+namespace Marsender\EPubLoader;
+
+use Exception;
+use PDO;
+
 require_once(realpath(dirname(__FILE__)) . '/BookInfos.class.php');
 
 define('PDO_SUCCES_CODE', '00000');

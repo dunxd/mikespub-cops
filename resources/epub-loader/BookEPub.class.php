@@ -6,9 +6,11 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader;
+
 use SebLucas\EPubMeta\EPub;
 
-$ePubMetaPath = realpath(dirname(dirname(dirname(__FILE__)))) . '/vendor/seblucas/php-epub-meta';
+$ePubMetaPath = realpath(dirname(dirname(__FILE__))) . '/php-epub-meta';
 require_once $ePubMetaPath . '/lib/EPub.php';
 require_once $ePubMetaPath . '/lib/EPubDOMElement.php';
 require_once $ePubMetaPath . '/lib/EPubDOMXPath.php';

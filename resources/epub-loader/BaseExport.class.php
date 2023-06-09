@@ -6,6 +6,10 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader;
+
+use Exception;
+
 class BaseExport
 {
     protected $mProperties = null;

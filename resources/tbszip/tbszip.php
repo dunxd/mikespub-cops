@@ -66,7 +66,7 @@ class clsTbsZip
         $this->Error = false;
         $this->ArchFile = $ArchName;
         $this->ArchIsNew = true;
-        $bin = 'PK'.chr(0o5).chr(0o6).str_repeat(chr(0), 18);
+        $bin = 'PK'.chr(05).chr(06).str_repeat(chr(0), 18);
         $this->CdEndPos = strlen($bin) - 4;
         $this->CdInfo = ['disk_num_curr'=>0, 'disk_num_cd'=>0, 'file_nbr_curr'=>0, 'file_nbr_tot'=>0, 'l_cd'=>0, 'p_cd'=>0, 'l_comm'=>0, 'v_comm'=>'', 'bin'=>$bin];
         $this->CdPos = $this->CdInfo['p_cd'];
@@ -140,7 +140,7 @@ class clsTbsZip
 
     public function CentralDirRead()
     {
-        $cd_info = 'PK'.chr(0o5).chr(0o6); // signature of the Central Directory
+        $cd_info = 'PK'.chr(05).chr(06); // signature of the Central Directory
         $cd_pos = -22;
         $this->_MoveTo($cd_pos, SEEK_END);
         $b = $this->_ReadData(4);
@@ -954,7 +954,7 @@ class clsTbsZip
         $purp  = 2048 ; // purpose // +8 to indicates that there is an extended local header
 
         // Header for file in the data section
-        $b = 'PK'.chr(0o3).chr(0o4).str_repeat(' ', 26); // signature
+        $b = 'PK'.chr(03).chr(04).str_repeat(' ', 26); // signature
         $this->_PutDec($b, 20, 4, 2); //vers = 20
         $this->_PutDec($b, $purp, 6, 2); // purp
         $this->_PutDec($b, $Ref['meth'], 8, 2);  // meth
@@ -974,7 +974,7 @@ class clsTbsZip
         unset($Ref['data']); // save PHP memory
 
         // Information for file in the Central Directory
-        $b = 'PK'.chr(0o1).chr(0o2).str_repeat(' ', 42); // signature
+        $b = 'PK'.chr(01).chr(02).str_repeat(' ', 42); // signature
         $this->_PutDec($b, 20, 4, 2);  // vers_used = 20
         $this->_PutDec($b, 20, 6, 2);  // vers_necess = 20
         $this->_PutDec($b, $purp, 8, 2);  // purp

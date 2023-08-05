@@ -213,6 +213,7 @@ class JSONRenderer
                 "html_tag_filter" => $config['cops_html_tag_filter'],
             ],
         ];
+
         if ($config['cops_thumbnail_handling'] == "1") {
             $out ["c"]["url"]["thumbnailUrl"] = $out ["c"]["url"]["coverUrl"];
         } elseif (!empty($config['cops_thumbnail_handling'])) {

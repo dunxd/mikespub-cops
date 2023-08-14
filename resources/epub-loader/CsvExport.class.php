@@ -12,6 +12,7 @@ require_once(realpath(__DIR__) . '/BaseExport.class.php');
 
 class CsvExport extends BaseExport
 {
+    /** @var array<string>|null */
     private $mLines = null;
 
     public const CsvSeparator = "\t";
@@ -36,6 +37,7 @@ class CsvExport extends BaseExport
     /**
      * Add the current properties into the export content
      * and reset the properties
+     * @return void
      */
     public function AddContent()
     {
@@ -66,6 +68,10 @@ class CsvExport extends BaseExport
         $this->ClearProperties();
     }
 
+    /**
+     * Summary of GetContent
+     * @return string
+     */
     protected function GetContent()
     {
         $text = implode("\n", $this->mLines) . "\n";

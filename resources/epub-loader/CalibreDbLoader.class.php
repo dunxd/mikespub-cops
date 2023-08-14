@@ -27,11 +27,13 @@ define('CalibreCreateDbSql', realpath(__DIR__) . '/metadata_sqlite.sql');
  */
 class CalibreDbLoader
 {
+    /** @var PDO|null */
     private $mDb = null;
 
+    /** @var array<string, mixed>|null */
     private $mBookId = null;
 
-    private $mBookIdFileName = '';
+    private string $mBookIdFileName = '';
 
     /**
      * Open a Calibre database (or create if database does not exist)
@@ -89,6 +91,7 @@ class CalibreDbLoader
 
     /**
      * Save the book ids file
+     * @return void
      */
     private function SaveBookIds()
     {
@@ -104,6 +107,11 @@ class CalibreDbLoader
         file_put_contents($this->mBookIdFileName, implode("\n", $tab) . "\n");
     }
 
+    /**
+     * Summary of GetBookId
+     * @param mixed $inBookFileName
+     * @return int
+     */
     private function GetBookId($inBookFileName)
     {
         if (isset($this->mBookId[$inBookFileName])) {

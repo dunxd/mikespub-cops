@@ -15,7 +15,9 @@ use ZipArchive;
  */
 class ZipFile
 {
+    /** @var ZipArchive|null */
     private $mZip;
+    /** @var array<string, mixed>|null */
     private $mEntries;
 
     public function __construct()

@@ -9,6 +9,7 @@
 namespace Marsender\EPubLoader;
 
 use SebLucas\EPubMeta\EPub;
+use SebLucas\EPubMeta\EPubDOMElement;
 
 $ePubMetaPath = realpath(dirname(__DIR__)) . '/php-epub-meta';
 require_once $ePubMetaPath . '/lib/EPub.php';
@@ -17,7 +18,7 @@ require_once $ePubMetaPath . '/lib/EPubDOMXPath.php';
 
 class BookEPub extends EPub
 {
-    protected $epubVersion = 0;
+    protected int $epubVersion = 0;
 
     /**
      * Get the ePub version
@@ -46,6 +47,7 @@ class BookEPub extends EPub
 
     /**
      * meta file getter
+     * @return string
      */
     public function meta()
     {
@@ -65,7 +67,7 @@ class BookEPub extends EPub
      * 'Simpson, Jacqueline' => 'Jacqueline Simpson',
      * )
      *
-     * @param array|string|false $authors
+     * @param array<mixed>|string|false $authors
      */
     public function Authors($authors = false)
     {
@@ -88,11 +90,13 @@ class BookEPub extends EPub
             }
 
             // add new nodes
+            /** @var EPubDOMElement $parent */
             $parent = $this->xpath->query('//opf:metadata')->item(0);
             foreach ($authors as $as => $name) {
                 if (is_int($as)) {
                     $as = $name;
                 } //numeric array given
+                /** @var EPubDOMElement $node */
                 $node = $parent->newChild('dc:creator', $name);
                 $node->attr('opf:role', 'aut');
                 $node->attr('opf:file-as', $as);

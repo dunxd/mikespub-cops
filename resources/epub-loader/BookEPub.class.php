@@ -34,11 +34,11 @@ class BookEPub extends EPub
         $this->epubVersion = 0;
         $nodes = $this->xpath->query('//opf:package[@unique-identifier="BookId"]');
         if ($nodes->length) {
-            $this->epubVersion = (int)$nodes->item(0)->attr('version');
+            $this->epubVersion = (int) $this->getAttr($nodes, 'version');
         } else {
             $nodes = $this->xpath->query('//opf:package');
             if ($nodes->length) {
-                $this->epubVersion = (int)$nodes->item(0)->attr('version');
+                $this->epubVersion = (int) $this->getAttr($nodes, 'version');
             }
         }
 
@@ -85,9 +85,7 @@ class BookEPub extends EPub
 
             // delete existing nodes
             $nodes = $this->xpath->query('//opf:metadata/dc:creator[@opf:role="aut"]');
-            foreach ($nodes as $node) {
-                $node->delete();
-            }
+            $this->deleteNodes($nodes);
 
             // add new nodes
             /** @var EPubDOMElement $parent */
@@ -118,6 +116,7 @@ class BookEPub extends EPub
             $nodes = $this->xpath->query('//opf:metadata/dc:creator[@opf:role="aut"]');
         }
         foreach ($nodes as $node) {
+            /** @var EPubDOMElement $node */
             $as = '';
             $name = $node->nodeValue;
             if ($version == 3) {
@@ -127,6 +126,7 @@ class BookEPub extends EPub
                 // <meta refines="#create1" scheme="marc:relators" property="role">aut</meta>
                 $metaNodes = $this->xpath->query('//opf:metadata/opf:meta[@refines="#' . $id . '"]');
                 foreach ($metaNodes as $metaNode) {
+                    /** @var EPubDOMElement $metaNode */
                     $metaProperty = $metaNode->attr('property');
                     switch ($metaProperty) {
                         case 'role':

@@ -45,7 +45,7 @@ class ZipFile
      * @param int|null $inFlags
      * @return boolean True if zip file has been correctly opended, else false
      */
-    public function Open($inFileName, $inFlags = ZipArchive::RDONLY)
+    public function Open($inFileName, $inFlags = 0)  // ZipArchive::RDONLY)
     {
         $this->Close();
 
@@ -145,7 +145,11 @@ class ZipFile
             return false;
         }
 
-        return $this->mZip->addFromString($Name, $Data);
+        if (!$this->mZip->addFromString($Name, $Data)) {
+            return false;
+        }
+        $this->mEntries[$Name] = $this->mZip->statName($Name);
+        return true;
     }
 
     /**
@@ -164,12 +168,41 @@ class ZipFile
 
         if ($inData === false) {
             if ($this->FileExists($inFileName)) {
-                return $this->mZip->deleteName($inFileName);
+                if (!$this->mZip->deleteName($inFileName)) {
+                    return false;
+                }
+                unset($this->mEntries[$inFileName]);
             }
-            return false;
+            return true;
         }
 
-        return $this->mZip->addFromString($inFileName, $inData);
+        if (!$this->mZip->addFromString($inFileName, $inData)) {
+            return false;
+        }
+        $this->mEntries[$inFileName] = $this->mZip->statName($inFileName);
+        return true;
+    }
+
+
+    /**
+     * Summary of FileCancelModif
+     * @param mixed $NameOrIdx
+     * @param mixed $ReplacedAndDeleted
+     * @return int
+     */
+    public function FileCancelModif($NameOrIdx, $ReplacedAndDeleted=true)
+    {
+        // cancel added, modified or deleted modifications on a file in the archive
+        // return the number of cancels
+
+        $nbr = 0;
+
+        if (!$this->mZip->unchangeName($NameOrIdx)) {
+            return $nbr;
+        }
+        $nbr += 1;
+
+        return $nbr;
     }
 
     /**
@@ -182,9 +215,6 @@ class ZipFile
         if (!isset($this->mZip)) {
             return;
         }
-
-        // don't save any changes to file for the moment?
-        //$this->mZip->unchangeAll();
 
         $this->mZip->close();
         $this->mZip = null;

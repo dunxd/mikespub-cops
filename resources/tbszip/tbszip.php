@@ -12,6 +12,8 @@ Visit http://www.tinybutstrong.com
 
 namespace SebLucas\TbsZip;
 
+use Exception;
+
 const TBSZIP_DOWNLOAD = 1;   // download (default)
 const TBSZIP_NOHEADER = 4;   // option to use with DOWNLOAD: no header is sent
 const TBSZIP_FILE = 8;       // output to file  , or add from file
@@ -549,6 +551,17 @@ class clsTbsZip
         } else {
             return true;
         }
+    }
+
+    /**
+     * Summary of FileStream
+     * @param mixed $NameOrIdx
+     * @throws \Exception
+     * @return never
+     */
+    public function FileStream($NameOrIdx)
+    {
+        throw new Exception('clsTbsZip does not support streams, use ZipFile class instead');
     }
 
     /**

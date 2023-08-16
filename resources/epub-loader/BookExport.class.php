@@ -32,7 +32,7 @@ class BookExport
     public function __construct($inFileName, $inExportType, $inCreate = false)
     {
         switch ($inExportType) {
-            case self::eExportTypeCsv:
+            case static::eExportTypeCsv:
                 $this->mExport = new CsvExport($inFileName, $inCreate);
                 break;
             default:

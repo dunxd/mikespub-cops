@@ -34,11 +34,11 @@ class BookEPub extends EPub
         $this->epubVersion = 0;
         $nodes = $this->xpath->query('//opf:package[@unique-identifier="BookId"]');
         if ($nodes->length) {
-            $this->epubVersion = (int) $this->getAttr($nodes, 'version');
+            $this->epubVersion = (int) static::getAttr($nodes, 'version');
         } else {
             $nodes = $this->xpath->query('//opf:package');
             if ($nodes->length) {
-                $this->epubVersion = (int) $this->getAttr($nodes, 'version');
+                $this->epubVersion = (int) static::getAttr($nodes, 'version');
             }
         }
 
@@ -96,8 +96,8 @@ class BookEPub extends EPub
                 } //numeric array given
                 /** @var Element $node */
                 $node = $parent->newChild('dc:creator', $name);
-                $node->attr('opf:role', 'aut');
-                $node->attr('opf:file-as', $as);
+                $node->setAttrib('opf:role', 'aut');
+                $node->setAttrib('opf:file-as', $as);
             }
 
             $this->reparse();
@@ -121,13 +121,13 @@ class BookEPub extends EPub
             $name = $node->nodeValue;
             if ($version == 3) {
                 $property = '';
-                $id = $node->attr('id');
+                $id = $node->getAttrib('id');
                 // Check if role is aut
                 // <meta refines="#create1" scheme="marc:relators" property="role">aut</meta>
                 $metaNodes = $this->xpath->query('//opf:metadata/opf:meta[@refines="#' . $id . '"]');
                 foreach ($metaNodes as $metaNode) {
                     /** @var Element $metaNode */
-                    $metaProperty = $metaNode->attr('property');
+                    $metaProperty = $metaNode->getAttrib('property');
                     switch ($metaProperty) {
                         case 'role':
                             $property = $metaNode->nodeValue;
@@ -141,14 +141,14 @@ class BookEPub extends EPub
                     continue;
                 }
             } else {
-                $as = $node->attr('opf:file-as');
+                $as = $node->getAttrib('opf:file-as');
             }
             if (!$as) {
                 $as = $name;
-                $node->attr('opf:file-as', $as);
+                $node->setAttrib('opf:file-as', $as);
             }
             if ($rolefix) {
-                $node->attr('opf:role', 'aut');
+                $node->setAttrib('opf:role', 'aut');
             }
             $authors[$as] = $name;
         }

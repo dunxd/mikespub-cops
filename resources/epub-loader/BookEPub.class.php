@@ -18,42 +18,6 @@ require_once $ePubMetaPath . '/lib/Dom/XPath.php';
 
 class BookEPub extends EPub
 {
-    protected int $epubVersion = 0;
-
-    /**
-     * Get the ePub version
-     *
-     * @return int The number of the ePub version (2 or 3 for now) or 0 if not found
-     */
-    public function getEpubVersion()
-    {
-        if ($this->epubVersion) {
-            return $this->epubVersion;
-        }
-
-        $this->epubVersion = 0;
-        $nodes = $this->xpath->query('//opf:package[@unique-identifier="BookId"]');
-        if ($nodes->length) {
-            $this->epubVersion = (int) static::getAttr($nodes, 'version');
-        } else {
-            $nodes = $this->xpath->query('//opf:package');
-            if ($nodes->length) {
-                $this->epubVersion = (int) static::getAttr($nodes, 'version');
-            }
-        }
-
-        return $this->epubVersion;
-    }
-
-    /**
-     * meta file getter
-     * @return string
-     */
-    public function meta()
-    {
-        return $this->meta;
-    }
-
     /**
      * Get or set the book author(s)
      * @deprecated 1.5.0 use getAuthors() or setAuthors() instead
@@ -193,7 +157,7 @@ class BookEPub extends EPub
     }
 
     /**
-     * Set or get the book's creation date
+     * Set or get the book's creation date - with fallback to dcterms:created
      *
      * @param string|false $date Date eg: 2012-05-19T12:54:25Z
      */
@@ -219,7 +183,7 @@ class BookEPub extends EPub
     }
 
     /**
-     * Set or get the book's modification date
+     * Set or get the book's modification date - with fallback to dcterms:modified
      *
      * @param string|false $date Date eg: 2012-05-19T12:54:25Z
      */

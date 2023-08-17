@@ -177,6 +177,27 @@ class clsTbsZip
     }
 
     /**
+     * Summary of FileAddPath
+     * @param mixed $Name
+     * @param mixed $Path
+     * @return mixed
+     */
+    public function FileAddPath($Name, $Path)
+    {
+        return $this->FileAdd($Name, file_get_contents($Path));
+    }
+
+    /**
+     * Summary of FileDelete
+     * @param mixed $Name
+     * @return mixed
+     */
+    public function FileDelete($Name)
+    {
+        return $this->FileReplace($Name, false);
+    }
+
+    /**
      * Summary of CentralDirRead
      * @return bool
      */

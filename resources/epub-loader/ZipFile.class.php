@@ -16,6 +16,12 @@ use ZipArchive;
  */
 class ZipFile
 {
+    public const DOWNLOAD = 1;   // download (default)
+    public const NOHEADER = 4;   // option to use with DOWNLOAD: no header is sent
+    public const FILE = 8;       // output to file  , or add from file
+    public const STRING = 32;    // output to string, or add from string
+    public const MIME_TYPE = 'application/epub+zip';
+
     /** @var ZipArchive|null */
     private $mZip;
     /** @var array<string, mixed>|null */
@@ -134,13 +140,12 @@ class ZipFile
 
     /**
      * Summary of FileAdd
-     * @param mixed $Name
+     * @param string $Name
      * @param mixed $Data
-     * @return mixed
+     * @return bool
      */
     public function FileAdd($Name, $Data)
     {
-        //throw new Exception('ZipFile is read-only, use clsTbsZip class instead');
         if (!isset($this->mZip)) {
             return false;
         }
@@ -153,15 +158,43 @@ class ZipFile
     }
 
     /**
+     * Summary of FileAddPath
+     * @param string $Name
+     * @param string $Path
+     * @return mixed
+     */
+    public function FileAddPath($Name, $Path)
+    {
+        if (!isset($this->mZip)) {
+            return false;
+        }
+
+        if (!$this->mZip->addFile($Path, $Name)) {
+            return false;
+        }
+        $this->mEntries[$Name] = $this->mZip->statName($Name);
+        return true;
+    }
+
+    /**
+     * Summary of FileDelete
+     * @param string $Name
+     * @return bool
+     */
+    public function FileDelete($Name)
+    {
+        return $this->FileReplace($Name, false);
+    }
+
+    /**
      * Replace the content of a file in the zip entries
      *
      * @param string $inFileName File with content to replace
      * @param string|bool $inData Data content to replace, or false to delete
-     * @return mixed
+     * @return bool
      */
     public function FileReplace($inFileName, $inData)
     {
-        //throw new Exception('ZipFile is read-only, use clsTbsZip class instead');
         if (!isset($this->mZip)) {
             return false;
         }
@@ -183,11 +216,10 @@ class ZipFile
         return true;
     }
 
-
     /**
      * Summary of FileCancelModif
-     * @param mixed $NameOrIdx
-     * @param mixed $ReplacedAndDeleted
+     * @param string $NameOrIdx
+     * @param bool $ReplacedAndDeleted
      * @return int
      */
     public function FileCancelModif($NameOrIdx, $ReplacedAndDeleted=true)
@@ -218,5 +250,36 @@ class ZipFile
 
         $this->mZip->close();
         $this->mZip = null;
+    }
+
+    /**
+     * Summary of Flush
+     * @param mixed $Render
+     * @param mixed $File
+     * @param mixed $ContentType
+     * @return never
+     */
+    public function Flush($Render=self::DOWNLOAD, $File='', $ContentType='')
+    {
+        // we need to close the zip file to save all changes here - probably not what you wanted :-()
+        $this->Close();
+
+        $File = $File ?: $this->mFileName;
+
+        $expires = 60*60*24*14;
+        header('Pragma: public');
+        header('Cache-Control: max-age=' . $expires);
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
+
+        header('Content-Type: ' . self::MIME_TYPE);
+        header('Content-Disposition: attachment; filename="' . basename($File) . '"');
+
+        $FilePath = realpath($this->mFileName);
+        // see fetch.php for use of Config::get('x_accel_redirect')
+        header('Content-Length: ' . filesize($FilePath));
+        readfile($FilePath);
+        //header(Config::get('x_accel_redirect') . ': ' . $FilePath);
+
+        exit;
     }
 }

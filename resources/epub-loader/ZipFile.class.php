@@ -4,6 +4,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
 
 namespace Marsender\EPubLoader;
@@ -13,6 +14,14 @@ use ZipArchive;
 
 /**
  * ZipFile class allows to open files inside a zip file with the standard php zip functions
+ *
+ * This class also supports adding/replacing/deleting files inside the zip file, but changes
+ * will *not* be reflected correctly until you close the zip file, and open it again if needed
+ *
+ * Note: this is not meant to handle a massive amount of files inside generic archive files.
+ * It is specifically meant for EPUB files which typically contain hundreds/thousands of pages,
+ * not millions or more. And any changes you make are kept in memory, so don't re-write every
+ * page of War and Peace either - better to unzip that locally and then re-zip it afterwards.
  */
 class ZipFile
 {
@@ -26,6 +35,8 @@ class ZipFile
     private $mZip;
     /** @var array<string, mixed>|null */
     private $mEntries;
+    /** @var array<string, mixed> */
+    private $mChanges = [];
     /** @var string|null */
     private $mFileName;
 
@@ -64,12 +75,13 @@ class ZipFile
         $this->mFileName = $inFileName;
 
         $this->mEntries = [];
+        $this->mChanges = [];
 
         for ($i = 0; $i <  $this->mZip->numFiles; $i++) {
-            //$fileName =  $this->mZip->getNameIndex($i);
             $entry =  $this->mZip->statIndex($i);
             $fileName = $entry['name'];
             $this->mEntries[$fileName] = $entry;
+            $this->mChanges[$fileName] = ['status' => 'unchanged'];
         }
 
         return true;
@@ -112,9 +124,25 @@ class ZipFile
             return false;
         }
 
-        //$entry = $this->mEntries[$inFileName];
-        $data = $this->mZip->getFromName($inFileName);
+        $data = false;
 
+        $changes = $this->mChanges[$inFileName] ?? ['status' => 'unchanged'];
+        switch ($changes['status']) {
+            case 'unchanged':
+                $data = $this->mZip->getFromName($inFileName);
+                break;
+            case 'added':
+            case 'modified':
+                if (isset($changes['data'])) {
+                    $data = $changes['data'];
+                } elseif (isset($changes['path'])) {
+                    $data = file_get_contents($changes['path']);
+                }
+                break;
+            case 'deleted':
+            default:
+                break;
+        }
         return $data;
     }
 
@@ -135,55 +163,67 @@ class ZipFile
             return false;
         }
 
+        // @todo streaming of added/modified data?
         return $this->mZip->getStream($inFileName);
     }
 
     /**
      * Summary of FileAdd
-     * @param string $Name
-     * @param mixed $Data
+     * @param string $inFileName
+     * @param mixed $inData
      * @return bool
      */
-    public function FileAdd($Name, $Data)
+    public function FileAdd($inFileName, $inData)
     {
         if (!isset($this->mZip)) {
             return false;
         }
 
-        if (!$this->mZip->addFromString($Name, $Data)) {
+        if (!$this->mZip->addFromString($inFileName, $inData)) {
             return false;
         }
-        $this->mEntries[$Name] = $this->mZip->statName($Name);
+        $this->mEntries[$inFileName] = $this->mZip->statName($inFileName);
+        $this->mChanges[$inFileName] = ['status' => 'added', 'data' => $inData];
         return true;
     }
 
     /**
      * Summary of FileAddPath
-     * @param string $Name
-     * @param string $Path
+     * @param string $inFileName
+     * @param string $inFilePath
      * @return mixed
      */
-    public function FileAddPath($Name, $Path)
+    public function FileAddPath($inFileName, $inFilePath)
     {
         if (!isset($this->mZip)) {
             return false;
         }
 
-        if (!$this->mZip->addFile($Path, $Name)) {
+        if (!$this->mZip->addFile($inFilePath, $inFileName)) {
             return false;
         }
-        $this->mEntries[$Name] = $this->mZip->statName($Name);
+        $this->mEntries[$inFileName] = $this->mZip->statName($inFileName);
+        $this->mChanges[$inFileName] = ['status' => 'added', 'path' => $inFilePath];
         return true;
     }
 
     /**
      * Summary of FileDelete
-     * @param string $Name
+     * @param string $inFileName
      * @return bool
      */
-    public function FileDelete($Name)
+    public function FileDelete($inFileName)
     {
-        return $this->FileReplace($Name, false);
+        if (!$this->FileExists($inFileName)) {
+            return false;
+        }
+
+        if (!$this->mZip->deleteName($inFileName)) {
+            return false;
+        }
+        unset($this->mEntries[$inFileName]);
+        $this->mChanges[$inFileName] = ['status' => 'deleted'];
+        return true;
     }
 
     /**
@@ -200,40 +240,46 @@ class ZipFile
         }
 
         if ($inData === false) {
-            if ($this->FileExists($inFileName)) {
-                if (!$this->mZip->deleteName($inFileName)) {
-                    return false;
-                }
-                unset($this->mEntries[$inFileName]);
-            }
-            return true;
+            return $this->FileDelete($inFileName);
         }
 
         if (!$this->mZip->addFromString($inFileName, $inData)) {
             return false;
         }
         $this->mEntries[$inFileName] = $this->mZip->statName($inFileName);
+        $this->mChanges[$inFileName] = ['status' => 'modified', 'data' => $inData];
         return true;
     }
 
     /**
+     * Return the state of the file.
+     * @param mixed $inFileName
+     * @return string|bool 'u'=unchanged, 'm'=modified, 'd'=deleted, 'a'=added, false=unknown
+     */
+    public function FileGetState($inFileName)
+    {
+        $changes = $this->mChanges[$inFileName] ?? ['status' => false];
+        return $changes['status'];
+    }
+
+    /**
      * Summary of FileCancelModif
-     * @param string $NameOrIdx
+     * @param string $inFileName
      * @param bool $ReplacedAndDeleted
      * @return int
      */
-    public function FileCancelModif($NameOrIdx, $ReplacedAndDeleted=true)
+    public function FileCancelModif($inFileName, $ReplacedAndDeleted=true)
     {
         // cancel added, modified or deleted modifications on a file in the archive
         // return the number of cancels
 
         $nbr = 0;
 
-        if (!$this->mZip->unchangeName($NameOrIdx)) {
+        if (!$this->mZip->unchangeName($inFileName)) {
             return $nbr;
         }
         $nbr += 1;
-
+        $this->mChanges[$inFileName] = ['status' => 'unchanged'];
         return $nbr;
     }
 
@@ -257,28 +303,34 @@ class ZipFile
      * @param mixed $Render
      * @param mixed $File
      * @param mixed $ContentType
+     * @param bool $sendHeaders
      * @return never
      */
-    public function Flush($Render=self::DOWNLOAD, $File='', $ContentType='')
+    public function Flush($Render=self::DOWNLOAD, $File='', $ContentType='', $sendHeaders = true)
     {
         // we need to close the zip file to save all changes here - probably not what you wanted :-()
         $this->Close();
 
         $File = $File ?: $this->mFileName;
-
-        $expires = 60*60*24*14;
-        header('Pragma: public');
-        header('Cache-Control: max-age=' . $expires);
-        header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
-
-        header('Content-Type: ' . self::MIME_TYPE);
-        header('Content-Disposition: attachment; filename="' . basename($File) . '"');
-
         $FilePath = realpath($this->mFileName);
-        // see fetch.php for use of Config::get('x_accel_redirect')
-        header('Content-Length: ' . filesize($FilePath));
+        if (!$sendHeaders) {
+            $Render = $Render | self::NOHEADER;
+        }
+
+        if (($Render & self::NOHEADER) !== self::NOHEADER) {
+            $expires = 60*60*24*14;
+            header('Pragma: public');
+            header('Cache-Control: max-age=' . $expires);
+            header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
+
+            header('Content-Type: ' . self::MIME_TYPE);
+            header('Content-Disposition: attachment; filename="' . basename($File) . '"');
+
+            // see fetch.php for use of Config::get('x_accel_redirect')
+            header('Content-Length: ' . filesize($FilePath));
+            //header(Config::get('x_accel_redirect') . ': ' . $FilePath);
+        }
         readfile($FilePath);
-        //header(Config::get('x_accel_redirect') . ': ' . $FilePath);
 
         exit;
     }

@@ -10,12 +10,13 @@ namespace Marsender\EPubLoader;
 
 use Exception;
 
-require_once(realpath(dirname(__FILE__)) . '/CsvExport.class.php');
+require_once(realpath(__DIR__) . '/CsvExport.class.php');
 
 class BookExport
 {
+    /** @var mixed */
     private $mExport = null;
-    private $mNbBook = 0;
+    private int $mNbBook = 0;
 
     public const eExportTypeCsv = 1;
     public const CsvSeparator = "\t";
@@ -128,6 +129,7 @@ class BookExport
 
     /**
      * Download export and stop further script execution
+     * @return void
      */
     public function Download()
     {
@@ -136,6 +138,7 @@ class BookExport
 
     /**
      * Save export to file
+     * @return void
      */
     public function SaveToFile()
     {

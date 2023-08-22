@@ -7,6 +7,7 @@ include_once(dirname(__DIR__) . '/tbszip/tbszip.php');
 
 // modify this to point to your book directory
 $bookdir = '/home/andi/Dropbox/ebooks/';
+$bookdir = '/home/mikespub/epub-tests/tests/';
 
 // proxy google requests
 if (isset($_GET['api'])) {
@@ -15,8 +16,8 @@ if (isset($_GET['api'])) {
     exit;
 }
 
-require_once dirname(__FILE__) . '/vendor/autoload.php';
-require_once dirname(__FILE__) . '/util.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/util.php';
 
 $epub = null;
 $error = null;

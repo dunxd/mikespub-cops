@@ -9,15 +9,16 @@
 namespace Marsender\EPubLoader;
 
 use SebLucas\EPubMeta\EPub;
+use SebLucas\EPubMeta\Dom\Element;
 
-$ePubMetaPath = realpath(dirname(dirname(__FILE__))) . '/php-epub-meta';
+$ePubMetaPath = realpath(dirname(__DIR__)) . '/php-epub-meta';
 require_once $ePubMetaPath . '/lib/EPub.php';
-require_once $ePubMetaPath . '/lib/EPubDOMElement.php';
-require_once $ePubMetaPath . '/lib/EPubDOMXPath.php';
+require_once $ePubMetaPath . '/lib/Dom/Element.php';
+require_once $ePubMetaPath . '/lib/Dom/XPath.php';
 
 class BookEPub extends EPub
 {
-    protected $epubVersion = 0;
+    protected int $epubVersion = 0;
 
     /**
      * Get the ePub version
@@ -33,11 +34,11 @@ class BookEPub extends EPub
         $this->epubVersion = 0;
         $nodes = $this->xpath->query('//opf:package[@unique-identifier="BookId"]');
         if ($nodes->length) {
-            $this->epubVersion = (int)$nodes->item(0)->attr('version');
+            $this->epubVersion = (int) $this->getAttr($nodes, 'version');
         } else {
             $nodes = $this->xpath->query('//opf:package');
             if ($nodes->length) {
-                $this->epubVersion = (int)$nodes->item(0)->attr('version');
+                $this->epubVersion = (int) $this->getAttr($nodes, 'version');
             }
         }
 
@@ -46,6 +47,7 @@ class BookEPub extends EPub
 
     /**
      * meta file getter
+     * @return string
      */
     public function meta()
     {
@@ -65,7 +67,7 @@ class BookEPub extends EPub
      * 'Simpson, Jacqueline' => 'Jacqueline Simpson',
      * )
      *
-     * @param array|string|false $authors
+     * @param array<mixed>|string|false $authors
      */
     public function Authors($authors = false)
     {
@@ -83,16 +85,16 @@ class BookEPub extends EPub
 
             // delete existing nodes
             $nodes = $this->xpath->query('//opf:metadata/dc:creator[@opf:role="aut"]');
-            foreach ($nodes as $node) {
-                $node->delete();
-            }
+            $this->deleteNodes($nodes);
 
             // add new nodes
+            /** @var Element $parent */
             $parent = $this->xpath->query('//opf:metadata')->item(0);
             foreach ($authors as $as => $name) {
                 if (is_int($as)) {
                     $as = $name;
                 } //numeric array given
+                /** @var Element $node */
                 $node = $parent->newChild('dc:creator', $name);
                 $node->attr('opf:role', 'aut');
                 $node->attr('opf:file-as', $as);
@@ -114,6 +116,7 @@ class BookEPub extends EPub
             $nodes = $this->xpath->query('//opf:metadata/dc:creator[@opf:role="aut"]');
         }
         foreach ($nodes as $node) {
+            /** @var Element $node */
             $as = '';
             $name = $node->nodeValue;
             if ($version == 3) {
@@ -123,6 +126,7 @@ class BookEPub extends EPub
                 // <meta refines="#create1" scheme="marc:relators" property="role">aut</meta>
                 $metaNodes = $this->xpath->query('//opf:metadata/opf:meta[@refines="#' . $id . '"]');
                 foreach ($metaNodes as $metaNode) {
+                    /** @var Element $metaNode */
                     $metaProperty = $metaNode->attr('property');
                     switch ($metaProperty) {
                         case 'role':

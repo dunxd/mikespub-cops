@@ -11,7 +11,7 @@ namespace Marsender\EPubLoader;
 use Exception;
 use PDO;
 
-require_once(realpath(dirname(__FILE__)) . '/BookInfos.class.php');
+require_once(realpath(__DIR__) . '/BookInfos.class.php');
 
 define('PDO_SUCCES_CODE', '00000');
 
@@ -19,7 +19,7 @@ define('PDO_SUCCES_CODE', '00000');
  * Calibre database sql file that comes unmodified from Calibre project:
  * https://raw.githubusercontent.com/kovidgoyal/calibre/master/resources/metadata_sqlite.sql
  */
-define('CalibreCreateDbSql', realpath(dirname(__FILE__)) . '/metadata_sqlite.sql');
+define('CalibreCreateDbSql', realpath(__DIR__) . '/metadata_sqlite.sql');
 
 /**
  * CalibreDbLoader class allows to open or create a new Calibre database,
@@ -27,11 +27,13 @@ define('CalibreCreateDbSql', realpath(dirname(__FILE__)) . '/metadata_sqlite.sql
  */
 class CalibreDbLoader
 {
+    /** @var PDO|null */
     private $mDb = null;
 
+    /** @var array<string, mixed>|null */
     private $mBookId = null;
 
-    private $mBookIdFileName = '';
+    private string $mBookIdFileName = '';
 
     /**
      * Open a Calibre database (or create if database does not exist)
@@ -89,6 +91,7 @@ class CalibreDbLoader
 
     /**
      * Save the book ids file
+     * @return void
      */
     private function SaveBookIds()
     {
@@ -104,6 +107,11 @@ class CalibreDbLoader
         file_put_contents($this->mBookIdFileName, implode("\n", $tab) . "\n");
     }
 
+    /**
+     * Summary of GetBookId
+     * @param mixed $inBookFileName
+     * @return int
+     */
     private function GetBookId($inBookFileName)
     {
         if (isset($this->mBookId[$inBookFileName])) {
@@ -239,17 +247,15 @@ class CalibreDbLoader
      *
      * @param BookInfos $inBookInfo BookInfo object
      * @param int $inBookId Book id in the calibre db (or 0 for auto incrementation)
+     * @param string $sortField Add 'calibre_database_field_sort' field
      *
      * @throws Exception if error
      *
      * @return void
      */
-    private function AddBook($inBookInfo, $inBookId)
+    private function AddBook($inBookInfo, $inBookId, $sortField = 'sort')
     {
         $errors = [];
-
-        // Add 'calibre_database_field_sort' field
-        $sortField = 'sort';
 
         // Check if the book uuid does not already exist
         $sql = 'select b.id, b.title, b.path, d.name, d.format from books as b, data as d where d.book = b.id and uuid=:uuid';

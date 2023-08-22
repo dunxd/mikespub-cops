@@ -99,6 +99,7 @@ class Element extends DOMElement
     /**
      * Split given name in namespace prefix and local part
      *
+     * @deprecated 1.5.0 use splitQualifiedName() instead
      * @param  string $name
      * @return array<string>  (namespace, name)
      */
@@ -113,6 +114,7 @@ class Element extends DOMElement
 
     /**
      * Simple EPub namespace aware attribute accessor
+     * @deprecated 1.5.0 use getAttrib(), setAttrib() or removeAttrib() instead
      * @param string $attr
      * @param string|false|null $value
      * @return string|void
@@ -198,7 +200,7 @@ class Element extends DOMElement
      * @param  string $name
      * @return array<string>  (prefix, name)
      */
-    private function splitQualifiedName($name)
+    protected function splitQualifiedName($name)
     {
         $list = explode(':', $name, 2);
         if (count($list) < 2) {
@@ -212,7 +214,7 @@ class Element extends DOMElement
      * @param  string $name
      * @return array<string>
      */
-    private function getNameContext($name)
+    protected function getNameContext($name)
     {
         [$prefix, $localName] = $this->splitQualifiedName($name);
 

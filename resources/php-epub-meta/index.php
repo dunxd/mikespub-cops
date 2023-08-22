@@ -4,10 +4,12 @@ use SebLucas\EPubMeta\EPub;
 
 // remove seblucas/tbszip from composer.json
 include_once(dirname(__DIR__) . '/tbszip/tbszip.php');
+// remove marsender/epub-loader from composer.json
+include_once(dirname(__DIR__) . '/epub-loader/ZipFile.class.php');
 
 // modify this to point to your book directory
 $bookdir = '/home/andi/Dropbox/ebooks/';
-$bookdir = '/home/mikespub/epub-tests/tests/';
+$bookdir = __DIR__ . '/test/data/';
 
 // proxy google requests
 if (isset($_GET['api'])) {
@@ -21,33 +23,33 @@ require_once __DIR__ . '/util.php';
 
 $epub = null;
 $error = null;
-if (isset($_REQUEST['book'])) {
+if (!empty($_REQUEST['book'])) {
     try {
-        $book = $_REQUEST['book'];
-        $book = str_replace('..', '', $book); // no upper dirs, lowers might be supported later
-        $epub = new EPub($bookdir . $book . '.epub');
+        $book = preg_replace('/[^\w _-]+/', '', $_REQUEST['book']);
+        $book = basename($book . '.epub'); // no upper dirs, lowers might be supported later
+        $epub = new EPub($bookdir . $book);
     } catch (Exception $e) {
         $error = $e->getMessage();
     }
 }
 
 // return image data
-if (isset($_REQUEST['img']) && isset($epub)) {
-    $img = $epub->Cover();
+if (!empty($_REQUEST['img']) && isset($epub)) {
+    $img = $epub->getCoverInfo();
     header('Content-Type: ' . $img['mime']);
     echo $img['data'];
     exit;
 }
 
 // save epub data
-if ($_REQUEST['save'] && isset($epub)) {
-    $epub->Title($_POST['title']);
-    $epub->Description($_POST['description']);
-    $epub->Language($_POST['language']);
-    $epub->Publisher($_POST['publisher']);
-    $epub->Copyright($_POST['copyright']);
-    $epub->ISBN($_POST['isbn']);
-    $epub->Subjects($_POST['subjects']);
+if (isset($_REQUEST['save']) && isset($epub)) {
+    $epub->setTitle($_POST['title']);
+    $epub->setDescription($_POST['description']);
+    $epub->setLanguage($_POST['language']);
+    $epub->setPublisher($_POST['publisher']);
+    $epub->setCopyright($_POST['copyright']);
+    $epub->setIsbn($_POST['isbn']);
+    $epub->setSubjects($_POST['subjects']);
 
     $authors = [];
     foreach ((array)$_POST['authorname'] as $num => $name) {
@@ -59,7 +61,7 @@ if ($_REQUEST['save'] && isset($epub)) {
             $authors[$as] = $name;
         }
     }
-    $epub->Authors($authors);
+    $epub->setAuthors($authors);
 
     // handle image
     $cover = '';
@@ -76,7 +78,7 @@ if ($_REQUEST['save'] && isset($epub)) {
     if ($cover) {
         $info = @getimagesize($cover);
         if (preg_match('/^image\/(gif|jpe?g|png)$/', $info['mime'])) {
-            $epub->Cover($cover, $info['mime']);
+            $epub->setCoverInfo($cover, $info['mime']);
         } else {
             $error = 'Not a valid image file' . $cover;
         }
@@ -94,20 +96,22 @@ if ($_REQUEST['save'] && isset($epub)) {
         @unlink($cover);
     }
 
-    // rename
-    $author = array_keys($epub->Authors())[0];
-    $title  = $epub->Title();
-    $new    = to_file($author . '-' . $title);
-    $new    = $bookdir . $new . '.epub';
-    $old    = $epub->file();
-    if (realpath($new) != realpath($old)) {
-        if (!@rename($old, $new)) {
-            $new = $old; //rename failed, stay here
+    if (!$error) {
+        // rename
+        $author = array_keys($epub->getAuthors())[0];
+        $title  = $epub->getTitle();
+        $new    = to_file($author . '-' . $title);
+        $new    = $bookdir . $new . '.epub';
+        $old    = $epub->file();
+        if (realpath($new) != realpath($old)) {
+            if (!@rename($old, $new)) {
+                $new = $old; //rename failed, stay here
+            }
         }
+        $go = basename($new, '.epub');
+        header('Location: ?book=' . rawurlencode($go));
+        exit;
     }
-    $go = basename($new, '.epub');
-    header('Location: ?book=' . rawurlencode($go));
-    exit;
 }
 
 header('Content-Type: text/html; charset=utf-8');

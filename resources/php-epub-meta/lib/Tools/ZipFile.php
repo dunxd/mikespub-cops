@@ -7,7 +7,7 @@
  * @author     mikespub
  */
 
-namespace Marsender\EPubLoader;
+namespace SebLucas\EPubMeta\Tools;
 
 use Exception;
 use ZipArchive;

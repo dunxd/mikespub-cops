@@ -44,6 +44,7 @@ $data = [
     'version' => DEF_AppVersion,
     'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
 ];
+$template = 'index.html';
 
 /**
  * Recursive get files
@@ -86,6 +87,7 @@ function RecursiveGlob($inPath = '', $inPattern = '*')
     return $res;
 }
 
+$result = null;
 // Html content
 if (isset($action) && isset($dbNum)) {
     if (!array_key_exists($action, $gConfig['actions'])) {
@@ -105,51 +107,39 @@ if (isset($action) && isset($dbNum)) {
     if (!file_exists($fileName)) {
         die('Incorrect action file: ' . $fileName);
     }
-    $str = require($fileName);
+    $result = require($fileName);
+    $data['action'] = $action;
+    $data['actionTitle'] = $gConfig['actions'][$action];
+    $data['dbNum'] = $dbNum;
+    $data['dbConfig'] = $gConfig['databases'][$dbNum];
+    if (is_file(dirname(__DIR__) . '/templates/' . $action . '.html')) {
+        $template = $action . '.html';
+    }
 } else {
     if (!isset($action)) {
         // Display the available actions
-        $str = '';
-        $str .= '<div><b>' . 'Select action' . '</b></div>' . "\n";
-        $str .= '	<ul>' . "\n";
-        foreach ($gConfig['actions'] as $action => $actionInfo) {
-            $str .= '		<li>' . "\n";
-            $str .= '			<a href="./index.php?action=' . $action . '">' . $actionInfo . '</a>' . "\n";
-            $str .= '		</li>' . "\n";
-        }
-        $str .= '	</ul>' . "\n";
+        $data['actions'] = $gConfig['actions'];
+        $template = 'actions.html';
     } else {
         // Display databases
-        $str = '';
-        $str .= '<table width="100%">' . "\n";
-        $str .= '<tr>' . "\n";
-        $str .= '<th>' . 'Db num' . '</th>' . "\n";
-        $str .= '<th>' . 'Db name' . '</th>' . "\n";
-        $str .= '<th>' . 'Action' . '</th>' . "\n";
-        $str .= '<th>' . 'Db Path' . '</th>' . "\n";
-        $str .= '<th>' . 'Epub path' . '</th>' . "\n";
-        $str .= '<th>' . 'Nb Files' . '</th>' . "\n";
-        $str .= '</tr>' . "\n";
-        $actionTitle = $gConfig['actions'][$action];
+        $data['action'] = $action;
+        $data['actionTitle'] = $gConfig['actions'][$action];
+        $data['databases'] = $gConfig['databases'];
         foreach ($gConfig['databases'] as $dbNum => $dbConfig) {
-            $dbConfig = $gConfig['databases'][$dbNum];
             $dbPath = $dbConfig['db_path'];
             $epubPath = $dbConfig['epub_path'];
             $fileList = RecursiveGlob($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
-            $str .= '<tr>' . "\n";
-            $str .= '<td>' . $dbNum . '</td>' . "\n";
-            $str .= '<td>' . $dbConfig['name'] . '</td>' . "\n";
-            $str .= '<td>' . '<a href="./index.php?action=' . $action . '&dbnum=' . $dbNum . '">' . $actionTitle . '</a>' . '</td>' . "\n";
-            $str .= '<td>' . $dbConfig['db_path'] . '</td>' . "\n";
-            $str .= '<td>' . $epubPath . '</td>' . "\n";
-            $str .= '<td>' . count($fileList) . '</td>' . "\n";
-            $str .= '</tr>' . "\n";
+            $data['databases'][$dbNum]['count'] = count($fileList);
         }
-        $str .= '</table>' . "\n";
+        $template = 'databases.html';
     }
 }
 
-$data['content'] = $str;
+if (is_array($result)) {
+    $data = array_merge($data, $result);
+} else {
+    $data['result'] = $result;
+}
 $data['errors'] = $gErrorArray;
 
 $loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__) . '/templates');
@@ -157,4 +147,4 @@ $twig = new \Twig\Environment($loader);
 
 header('Content-type: text/html; charset=utf-8');
 
-echo $twig->render('index.html', $data);
+echo $twig->render($template, $data);

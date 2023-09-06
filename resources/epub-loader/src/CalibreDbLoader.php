@@ -575,4 +575,16 @@ class CalibreDbLoader
             $sort = $post->sort;
         }
     }
+
+    public function getAuthors()
+    {
+        $sql = 'select id, name, sort, link from authors';
+        $stmt = $this->mDb->prepare($sql);
+        $stmt->execute();
+        $authors = [];
+        while ($post = $stmt->fetchObject()) {
+            $authors[] = (array) $post;
+        }
+        return $authors;
+    }
 }

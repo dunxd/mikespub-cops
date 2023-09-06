@@ -10,7 +10,7 @@
 define('DEF_AppName', 'Epub loader');
 
 // Application version
-define('DEF_AppVersion', '1.0');
+define('DEF_AppVersion', '1.1');
 
 //------------------------------------------------------------------------------
 // Include files
@@ -39,8 +39,11 @@ $gErrorArray = [];
 $action = $_GET['action'] ?? null;
 $dbNum = isset($_GET['dbnum']) ? (int)$_GET['dbnum'] : null;
 
-// Include html header
-require_once(__DIR__ . DIRECTORY_SEPARATOR . 'header.php');
+$data = [
+    'app_name' => empty($gConfig['app_name']) ? DEF_AppName : $gConfig['app_name'],
+    'version' => DEF_AppVersion,
+    'admin_email' => empty($gConfig['admin_email']) ? '' : str_rot13($gConfig['admin_email']),
+];
 
 /**
  * Recursive get files
@@ -85,6 +88,9 @@ function RecursiveGlob($inPath = '', $inPattern = '*')
 
 // Html content
 if (isset($action) && isset($dbNum)) {
+    if (!array_key_exists($action, $gConfig['actions'])) {
+        die('Invalid action');
+    }
     if (!isset($gConfig['databases'][$dbNum])) {
         die('Incorrect database num: ' . $dbNum);
     }
@@ -99,7 +105,7 @@ if (isset($action) && isset($dbNum)) {
     if (!file_exists($fileName)) {
         die('Incorrect action file: ' . $fileName);
     }
-    require_once($fileName);
+    $str = require($fileName);
 } else {
     if (!isset($action)) {
         // Display the available actions
@@ -112,7 +118,6 @@ if (isset($action) && isset($dbNum)) {
             $str .= '		</li>' . "\n";
         }
         $str .= '	</ul>' . "\n";
-        echo $str;
     } else {
         // Display databases
         $str = '';
@@ -141,9 +146,15 @@ if (isset($action) && isset($dbNum)) {
             $str .= '</tr>' . "\n";
         }
         $str .= '</table>' . "\n";
-        echo $str;
     }
 }
 
-// Include html footer
-require_once(__DIR__ . DIRECTORY_SEPARATOR . 'footer.php');
+$data['content'] = $str;
+$data['errors'] = $gErrorArray;
+
+$loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__) . '/templates');
+$twig = new \Twig\Environment($loader);
+
+header('Content-type: text/html; charset=utf-8');
+
+echo $twig->render('index.html', $data);

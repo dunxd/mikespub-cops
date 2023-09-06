@@ -11,8 +11,6 @@ namespace Marsender\EPubLoader;
 use Exception;
 use PDO;
 
-require_once(realpath(__DIR__) . '/BookInfos.class.php');
-
 define('PDO_SUCCES_CODE', '00000');
 
 /**

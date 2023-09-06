@@ -16,6 +16,8 @@ define('DEF_AppVersion', '1.0');
 // Include files
 //------------------------------------------------------------------------------
 
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
 // Include config file
 $fileName = __DIR__ . DIRECTORY_SEPARATOR . 'epub-loader-config.php';
 if (!file_exists($fileName)) {
@@ -25,20 +27,6 @@ if (!file_exists($fileName)) {
 $gConfig = [];
 require_once($fileName);
 /** @var array<mixed> $gConfig */
-
-// Include Calibre database loader class
-$fileName = $gConfig['cops_directory'] . '/resources/epub-loader/CalibreDbLoader.class.php';
-if (!file_exists($fileName)) {
-    die('Incorrect include file: ' . $fileName);
-}
-require_once($fileName);
-
-// Include book export class
-$fileName = $gConfig['cops_directory'] . '/resources/epub-loader/BookExport.class.php';
-if (!file_exists($fileName)) {
-    die('Incorrect include file: ' . $fileName);
-}
-require_once($fileName);
 
 //------------------------------------------------------------------------------
 // Start application

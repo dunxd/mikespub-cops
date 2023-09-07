@@ -6,7 +6,10 @@
  * @author     Didier Corbière <contact@atoll-digital-library.org>
  */
 
+namespace Marsender\EPubLoader\App;
+
 use Marsender\EPubLoader\BookExport;
+use Exception;
 
 /** @var array<mixed> $dbConfig */
 

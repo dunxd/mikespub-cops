@@ -4,7 +4,10 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
+
+namespace Marsender\EPubLoader\App;
 
 // Application name
 define('DEF_AppName', 'Epub loader');
@@ -19,7 +22,7 @@ define('DEF_AppVersion', '1.1');
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 // Include config file
-$fileName = __DIR__ . DIRECTORY_SEPARATOR . 'epub-loader-config.php';
+$fileName = __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 if (!file_exists($fileName)) {
     die('Missing configuration file: ' . $fileName);
 }

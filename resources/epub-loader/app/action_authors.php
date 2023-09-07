@@ -1,13 +1,17 @@
 <?php
 /**
- * Epub loader application action: load ebooks into calibre databases
+ * Epub loader application action: check authors in calibre databases
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Didier Corbière <contact@atoll-digital-library.org>
+ * @author     mikespub
  */
+
+namespace Marsender\EPubLoader\App;
 
 use Marsender\EPubLoader\CalibreDbLoader;
 use Wikidata\Wikidata;
+use Exception;
 
 /** @var array<mixed> $dbConfig */
 /** @var array<mixed> $gErrorArray */

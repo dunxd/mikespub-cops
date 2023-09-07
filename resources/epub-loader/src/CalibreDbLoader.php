@@ -576,6 +576,10 @@ class CalibreDbLoader
         }
     }
 
+    /**
+     * Summary of getAuthors
+     * @return array<mixed>
+     */
     public function getAuthors()
     {
         $sql = 'select id, name, sort, link from authors';

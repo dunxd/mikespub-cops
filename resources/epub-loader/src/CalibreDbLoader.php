@@ -577,6 +577,19 @@ class CalibreDbLoader
     }
 
     /**
+     * Summary of setAuthorLink
+     * @param int $authorId
+     * @param string $link
+     * @return bool
+     */
+    public function setAuthorLink($authorId, $link)
+    {
+        $sql = 'update authors set link = ? where id = ?';
+        $stmt = $this->mDb->prepare($sql);
+        return $stmt->execute([$link, $authorId]);
+    }
+
+    /**
      * Summary of getAuthors
      * @return array<mixed>
      */

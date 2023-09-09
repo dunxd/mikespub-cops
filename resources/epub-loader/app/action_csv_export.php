@@ -8,6 +8,7 @@
 
 namespace Marsender\EPubLoader\App;
 
+use Marsender\EPubLoader\ActionHandler;
 use Marsender\EPubLoader\BookExport;
 use Exception;
 
@@ -25,7 +26,7 @@ try {
     $nbOk = 0;
     $epubPath = $dbConfig['epub_path'];
     if (!empty($epubPath)) {
-        $fileList = RecursiveGlob($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
+        $fileList = ActionHandler::getFiles($dbPath . DIRECTORY_SEPARATOR . $epubPath, '*.epub');
         foreach ($fileList as $file) {
             $filePath = substr($file, strlen($dbPath) + 1);
             $error = $export->AddEpub($dbPath, $filePath);

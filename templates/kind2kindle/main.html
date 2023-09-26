@@ -9,7 +9,7 @@
 <h2>Items</h2>
 {{? it.containsBook == 0}}
     <!-- Not book data -->
-    <div class="row row-cols-md-3 g-0">
+    <div class="all-items">
         {{~it.entries:entry:i}}
         <div class="card">
             <div class="card-body">
@@ -31,7 +31,7 @@
     </div>
     <!-- end Not book data -->
 {{??}}
-<div>
+<div class="all-items">
     {{~it.entries:entry:idx}}
         <div class="card">
             <div class="cover-image">

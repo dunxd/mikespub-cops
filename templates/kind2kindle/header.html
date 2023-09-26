@@ -1,11 +1,10 @@
 <header>
-    <h1>Title linked to home page</h1>
-    <ul>
-        <li>Top level navigation menu</li>
-        <li>Recent Additions</li>
-        <li>Authors</li>
-        <li>Tags</li>
-        <li>Series</li>
-        <li>All books</li>
+    <h1><a href="{{=it.homeurl}}">{{=it.libraryName}}</a></h1>
+    <ul id="top-nav">
+        <li><a class="nav-link{{? it.page == 10}} active{{?}}" href="{{=it.baseurl}}?page=10"{{? it.page == 10 }} aria-current="page"{{?}}>{{=it.c.i18n.recentTitle}}</a></li>
+        <li><a class="nav-link{{? it.page == 1}} active{{?}}" href="{{=it.baseurl}}?page=1"{{? it.page == 1 }} aria-current="page"{{?}}>{{=it.c.i18n.authorsTitle}}</a></li>
+        <li><a class="nav-link{{? it.page == 11}} active{{?}}" href="{{=it.baseurl}}?page=11"{{? it.page == 11 }} aria-current="page"{{?}}>{{=it.c.i18n.tagsTitle}}</a></li>
+        <li><a class="nav-link{{? it.page == 6}} active{{?}}" href="{{=it.baseurl}}?page=6"{{? it.page == 6 }} aria-current="page"{{?}}>{{=it.c.i18n.seriesTitle}}</a></li>
+        <li><a class="nav-link{{? it.page == 4}} active{{?}}" href="{{=it.baseurl}}?page=4"{{? it.page ==4 }} aria-current="page"{{?}}>{{=it.c.i18n.allbooksTitle}}</a></li>
     </ul>
 </header>

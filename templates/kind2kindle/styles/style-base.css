@@ -1,0 +1,33 @@
+body {
+    font-family: "Amazon Ember", Helvetica, Futura, Caecilia, Georgia, Palatino, sans-serif;
+    font-size: 1.6em;
+    line-height: 1.4em;
+    color: #000
+}
+
+.all-items {
+    
+}
+
+.card {
+    width:350px;
+    height: 600px;
+    float:left;
+    padding:5px;
+    margin: 5px;
+    text-align: center;
+    vertical-align: center;
+}
+
+a {
+    color:#000;
+}
+
+a[role="button"] {
+    border: 1px solid black;
+    background-color: gray;
+    color: white;
+    padding: 2px;
+    text-align: center;
+    text-decoration: none;
+}

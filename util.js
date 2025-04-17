@@ -71,7 +71,7 @@ function updateCookie (id) {
 /*exported updateCookieFromCheckbox */
 function updateCookieFromCheckbox (id) {
     var name = $(id).attr('id');
-    if (name.includes('-')) {
+    if (name.indexOf('-') > -1) {
         var nameArray = name.split('-');
         name = nameArray[0];
     }
@@ -439,11 +439,11 @@ function link_Clicked (event) {
     }
     // let read, fetch, zippper etc. do their thing
     var url = currentLink.attr('href');
-    if (url.includes('/read/') ||
-        url.includes('/fetch/') ||
-        url.includes('/zipper/') ||
-        url.includes('/covers/') ||
-        url.includes('/files/')) {
+    if (url.indexOf('/read/') !== -1 ||
+        url.indexOf('/fetch/') !== -1 ||
+        url.indexOf('/zipper/') !== -1 ||
+        url.indexOf('/covers/') !== -1 ||
+        url.indexOf('/files/') !== -1) {
         return;
     }
     event.preventDefault();
